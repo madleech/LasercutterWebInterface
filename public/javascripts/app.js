@@ -19,5 +19,5 @@ var update_webcam = function() {
 
 $(function() {
 	setInterval(refresh_status, 1000);
-	setInterval(update_webcam, 1000);
+	setInterval(update_webcam, 10000);
 });
