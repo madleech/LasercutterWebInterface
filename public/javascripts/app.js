@@ -17,7 +17,16 @@ var update_webcam = function() {
 	webcam.attr('src', src + '?' + Date.now());
 }
 
+var update_temperature = function() {
+	$.post('/api/temperature', function(response) {
+		$('[data-id=temperature]').text(response.temperature);
+	});
+}
+
 $(function() {
-	setInterval(refresh_status, 1000);
+	setInterval(refresh_status, 1500);
 	setInterval(update_webcam, 10000);
+	setInterval(update_temperature, 5000);
+	
+	refresh_status();
 });

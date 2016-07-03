@@ -3,6 +3,7 @@ router = express.Router()
 jobs = require '../lib/jobs'
 serial = require '../lib/serial'
 radio = require '../lib/radio'
+sensors = require '../lib/sensors'
 
 progress = 0
 status = null
@@ -33,5 +34,8 @@ router.all '/progress', (req, res) ->
     status: status || 'Waiting for upload'
     timestamp: Date.now()
   }
+
+router.all '/temperature', (req, res) ->
+  res.send temperature: (if sensors.temperature then "#{sensors.temperature}ºC" else 'unknown')
 
 module.exports = router
