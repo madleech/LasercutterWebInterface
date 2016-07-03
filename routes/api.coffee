@@ -36,6 +36,6 @@ router.all '/progress', (req, res) ->
   }
 
 router.all '/temperature', (req, res) ->
-  res.send temperature: (if sensors.temperature then "#{sensors.temperature}ºC" else 'unknown')
+  res.send temperature: (if sensors.temperature() then "#{Math.round sensors.temperature()}°C" else 'Unknown')
 
 module.exports = router

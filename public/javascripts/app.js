@@ -26,7 +26,7 @@ var update_temperature = function() {
 $(function() {
 	setInterval(refresh_status, 1500);
 	setInterval(update_webcam, 10000);
-	setInterval(update_temperature, 5000);
+	setInterval(update_temperature, 30000);
 	
 	refresh_status();
 });
