@@ -8,7 +8,7 @@ router = express.Router()
 router.get '/', (req, res, next) ->
   serial.ports (ports) ->
     res.render 'index',
-      title: 'Express'
+      title: 'WebCut'
       jobs: jobs.list
       ports: ports
 
