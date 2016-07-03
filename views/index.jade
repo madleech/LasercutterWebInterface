@@ -1,0 +1,18 @@
+extends layout
+
+block nav
+  .navbar-text
+    | Current job:
+    span(data-id='current-job') none
+  .navbar-text
+    | Status:
+    span(data-id='status') Waiting for job
+  .navbar-text
+    | Progress:
+    .progress
+      .progress-bar(style='width:0%', data-id='job-progressbar')
+    span(data-id='job-progress') 0%
+
+
+block content
+  img(src='/webcam.jpg', data-id='webcam')

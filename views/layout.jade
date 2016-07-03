@@ -1,0 +1,17 @@
+doctype html
+html
+  head
+    title= title
+    script(src='/components/jquery/dist/jquery.min.js')
+    script(src='/javascripts/app.js')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel='stylesheet', href='/components/bootstrap/dist/css/bootstrap.min.css')
+  body
+    nav.navbar.navbar-inverse.navbar-static-top
+      .container-fluid
+        .navbar-header
+          a.navbar-brand(href='/') WebCut
+        block nav
+    
+    .container-fluid
+      block content
