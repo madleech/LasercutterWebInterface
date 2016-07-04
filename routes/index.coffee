@@ -11,5 +11,6 @@ router.get '/', (req, res, next) ->
       title: 'WebCut'
       jobs: jobs.list
       ports: ports
+      webcam_url: "http://#{req.hostname}:8080/?action=stream"
 
 module.exports = router
