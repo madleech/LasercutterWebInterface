@@ -22,9 +22,9 @@ HOMED = 'HOMED'
 # ~> error if not ok
 
 class Printer extends EventEmitter
-	constructor: (port, speed=57600, connect_timeout=30000) ->
+	constructor: (port, connect_timeout=10000) ->
 		@progress UNCONNECTED
-		@port = new SerialPort(port, speed)
+		@port = new SerialPort(port)
 		
 		# timeout handler
 		setTimeout (=> @emit 'error', "Failed to connect after #{connect_timeout}ms" if @state == UNCONNECTED), connect_timeout
@@ -42,7 +42,7 @@ class Printer extends EventEmitter
 				@transition LOCKED
 			else if data.indexOf("[Caution: Unlocked]") == 0
 				@transition UNLOCKED
-			else if data.indexOf("ok") == 0
+			else if data.match "ok"
 				if @state == HOMING
 					@transition HOMED
 				else
@@ -54,7 +54,7 @@ class Printer extends EventEmitter
 			else if data.indexOf("[Reset to continue]") == 0
 				@transition RESET_REQUIRED
 			else
-				@emit 'error', "unknown response: #{data}"
+				debug "unknown response: #{data}"
 		
 		# handle transmit events
 		@on 'state', (state) ->
@@ -67,7 +67,7 @@ class Printer extends EventEmitter
 	soft_reset: ->
 		# send soft reset
 		@progress 'sending soft reset'
-		@port.write 0x18
+		@port.serial.write new Buffer([0x18])
 	
 	transition: (new_state) ->
 		debug "transitioning to #{new_state}"
@@ -79,22 +79,22 @@ class Printer extends EventEmitter
 		@emit 'progress', message
 	
 	write: (line) ->
-		@port.write line
+		@port.write "#{line}\n"
 	
 	home: (cb) ->
 		@progress 'Homing'
 		@transition HOMING
-		@port.write '$H', cb
+		@port.write "$H\n", cb
 	
 	unlock: (cb) ->
 		@progress 'Unlocking'
-		@port.write '$X', cb
+		@port.write "$X\n", cb
 	
 	reset: (mm, cb) ->
-		@port.write "G0 Z#{mm}", cb
+		@port.write "G0 Z#{mm}\n", cb
 	
 	status: ->
-		@port.write '?'
+		@port.write "?\n"
 	
 	close: ->
 		@port.close()

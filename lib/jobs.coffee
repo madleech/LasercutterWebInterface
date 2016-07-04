@@ -36,10 +36,10 @@ class Job extends EventEmitter
 	constructor: (@ip, @name, lines = "") ->
 		@id = null
 		@line = 0
-		@lines = "#{lines}".split("\n")
+		@lines = "#{lines}".split(/[\r\n]/)
 	
 	start: (port = process.env.DEVICE) ->
-		debug "starting job #{@name} with port= #{port}"
+		debug "starting job #{@name} with port= #{port} and #{@line_count()} lines"
 		current_job = @
 		@printer = new printer port
 		# once ready, send some first line
@@ -51,11 +51,9 @@ class Job extends EventEmitter
 		@printer.on 'progress', (text) => radio.broadcast 'progress', 0, text
 	
 	send_next_line: ->
-		# track which line we're up to
-		@line++
 		# send next line
-		if @line <= @lines.length
-			@printer.write @lines[@line-1]
+		if @line < @lines.length
+			@printer.write @lines[@line]
 			radio.broadcast 'progress', @line/@lines.length, 'Cutting'
 		
 		# or if out of lines
@@ -65,8 +63,11 @@ class Job extends EventEmitter
 			radio.broadcast 'finished'
 			@printer.close()
 			@printer = null
+		
+		# track which line we're up to
+		@line++
 	
-	line_count: -> @lines.count
+	line_count: -> @lines.length
 	
 	abort: ->
 		debug "aborting unfinished job"

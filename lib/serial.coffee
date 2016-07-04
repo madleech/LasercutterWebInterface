@@ -10,30 +10,29 @@ class SerialPort extends EventEmitter
 	
 	# set up serial port
 	constructor: (port, speed = 115200) ->
-		@id = Math.floor(Math.random() * 1000)
 		@serial = new Serial port,
 			baudrate: speed
 			lock: false
 			parser: Serial.parsers.readline "\n"
 		
 		@serial.on 'open', =>
-			debug "port open #{@id}"
+			debug "port open"
 			@emit 'connected'
 	
 		@serial.on 'data', (data) =>
-			debug "rx: #{data} #{@id}"
+			debug "rx: #{data}"
 			@emit 'data', "#{data}"
 		
 		@serial.on 'error', (err) =>
 			debug "error: #{err}"
 			@emit 'error', err
 	
-	write: (data, cb) ->
+	write: (data) ->
 		debug "tx: #{data}"
-		@serial.write data, (-> @once 'data', cb if cb)
+		@serial.write data
 	
-	close: (cb) ->
-		debug "closing serial port #{@id}"
+	close: ->
+		debug "closing serial port"
 		@serial.removeAllListeners()
 		@serial.close (err) ->
 			debug err
