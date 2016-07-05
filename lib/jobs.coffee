@@ -54,7 +54,7 @@ class Job extends EventEmitter
 		# send next line
 		if @line < @lines.length
 			@printer.write @lines[@line]
-			radio.broadcast 'progress', @line/@lines.length, 'Cutting'
+			radio.broadcast 'progress', @line/@lines.length, 'cutting'
 		
 		# or if out of lines
 		else
