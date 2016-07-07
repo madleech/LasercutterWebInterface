@@ -11,16 +11,14 @@ progress = 0
 status = null
 
 radio.on 'progress', (value, state) ->
-  debug("Got progress", arguments);
   progress = value
   status = state
 radio.on 'finished', ->
   progress = 0
   status = 'finished'
 
-printer.on 'error', (text) -> debug("Got error: #{text}"); status = text
-printer.on 'alarm', (text) -> debug("Got alarm: #{text}"); status = text
-# printer.on 'state', (state) -> debug("Got state: #{state}"); status = state
+printer.on 'error', (text) -> status = text
+printer.on 'alarm', (text) -> status = text
 
 router.get '/jobs', (req, res, next) ->
   res.send (for job in jobs.list
@@ -55,15 +53,13 @@ router.post '/abort', (req, res) ->
   res.send ok:true
 
 router.post '/home', (req, res) ->
-  home = -> debug("sending one homing request"); printer.home()
+  home = -> printer.home()
   printer.once 'ready', home
   printer.once 'state', (state) ->
     if state is 'HOMED'
-      debug("removing listener")
       printer.removeEventListener home
   
   printer.connect()
-  
   res.send ok:true
   
 

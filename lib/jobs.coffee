@@ -42,16 +42,16 @@ class Job extends EventEmitter
 		debug "starting job #{@name} with #{@line_count()} lines"
 		current_job = @
 		# once ready, send some first line
-		printer.once 'ready', (=> @send_next_line())
+		printer.once 'ready', @send_next_line
 		# each time an ok is received, send next line
-		printer.on 'ok', => @send_next_line()
+		printer.on 'ok', @send_next_line
 		printer.on 'error', (error) => radio.broadcast 'error', error
 		printer.on 'alarm', (alarm) => radio.broadcast 'alarm', alarm
 		printer.on 'progress', (text) => radio.broadcast 'progress', 0, text
 		
 		printer.connect()
 	
-	send_next_line: ->
+	send_next_line: =>
 		# send next line
 		if @line < @lines.length
 			printer.write @lines[@line]
@@ -70,6 +70,8 @@ class Job extends EventEmitter
 	abort: ->
 		debug "aborting unfinished job"
 		printer.soft_reset()
+		printer.removeListener 'ready', @send_next_line
+		printer.removeListener 'ok', @send_next_line
 		@finish()
 	
 	finish: ->
