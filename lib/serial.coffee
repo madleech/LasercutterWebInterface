@@ -13,6 +13,7 @@ class SerialPort extends EventEmitter
 		@serial = new Serial port,
 			baudrate: speed
 			lock: false
+			autoOpen: false
 			parser: Serial.parsers.readline "\n"
 		
 		@serial.on 'open', =>
@@ -27,15 +28,18 @@ class SerialPort extends EventEmitter
 			debug "error: #{err}"
 			@emit 'error', err
 	
+	open: -> @serial.open()
+	isOpen: -> @serial.isOpen()
+	
 	write: (data) ->
 		debug "tx: #{data}"
 		@serial.write data
 	
 	close: ->
 		debug "closing serial port"
-		@serial.removeAllListeners()
-		@serial.close (err) ->
-			debug err
+		if @serial.isOpen()
+			@serial.close (err) ->
+				debug err
 
 
 module.exports = SerialPort

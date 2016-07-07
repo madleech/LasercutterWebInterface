@@ -4,13 +4,14 @@ SerialPort = require './serial'
 {EventEmitter} = require 'events'
 debug = require('debug')('webcut:printer')
 
-UNCONNECTED = 'UNCONNECTED'
+DISCONNECTED = 'DISCONNECTED'
 RESET = 'RESET'
 LOCKED = 'LOCKED'
 UNLOCKED = 'UNLOCKED'
 HOMING = 'HOMING'
 RESET_REQUIRED = 'RESET_REQUIRED'
 HOMED = 'HOMED'
+READY = 'READY'
 
 # connect to grbl
 # -> 0x18 - reset command
@@ -22,17 +23,11 @@ HOMED = 'HOMED'
 # ~> error if not ok
 
 class Printer extends EventEmitter
-	constructor: (port, connect_timeout=10000) ->
-		@progress UNCONNECTED
-		@port = new SerialPort(port)
+	constructor: (@device = process.env.DEVICE) ->
+		@port = new SerialPort(@device)
+		@state = DISCONNECTED
 		
-		# timeout handler
-		setTimeout (=> @emit 'error', "Failed to connect after #{connect_timeout}ms" if @state == UNCONNECTED), connect_timeout
-		
-		# connect
-		@port.on 'connected', =>
-			# send soft reset
-			@soft_reset()
+		@port.on 'connected', => @soft_reset()
 		
 		# handle receive events
 		@port.on 'data', (data) =>
@@ -61,8 +56,29 @@ class Printer extends EventEmitter
 			switch state
 				when RESET then {}
 				when LOCKED then @home()
-				when UNLOCKED then @emit 'ready'
-				when HOMED then @emit 'ready'
+				when UNLOCKED then @transition READY
+				when HOMED then @transition READY
+				when READY then @emit 'ready'
+	
+	connect: (connect_timeout=10000) ->
+		debug "About to connect, state is #{@state}"
+		if @state is READY
+			@emit 'ready'
+			return
+		
+		debug "Connecting to #{@device}"
+		@progress DISCONNECTED
+		
+		# timeout handler
+		setTimeout (=> @emit 'error', "Failed to connect after #{connect_timeout}ms" if @state == DISCONNECTED), connect_timeout
+		
+		# send soft reset once connected
+		if @port.isOpen()
+			debug "Port already open, sending soft reset"
+			@soft_reset()
+		else
+			debug "Opening port before sending soft reset"
+			@port.open()
 	
 	soft_reset: ->
 		# send soft reset
@@ -82,8 +98,8 @@ class Printer extends EventEmitter
 		@port.write "#{line}\n"
 	
 	home: (cb) ->
-		@progress 'Homing'
 		@transition HOMING
+		@progress 'Homing'
 		@port.write "$H\n", cb
 	
 	unlock: (cb) ->
@@ -97,8 +113,7 @@ class Printer extends EventEmitter
 		@port.write "?\n"
 	
 	close: ->
+		@transition DISCONNECTED
 		@port.close()
-		@port.removeAllListeners()
-	
 
-module.exports = Printer
+module.exports = new Printer

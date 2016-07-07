@@ -38,31 +38,29 @@ class Job extends EventEmitter
 		@line = 0
 		@lines = "#{lines}".split(/[\r\n]/)
 	
-	start: (port = process.env.DEVICE) ->
-		debug "starting job #{@name} with port= #{port} and #{@line_count()} lines"
+	start: ->
+		debug "starting job #{@name} with #{@line_count()} lines"
 		current_job = @
-		@printer = new printer port
 		# once ready, send some first line
-		@printer.once 'ready', (=> @send_next_line())
+		printer.once 'ready', (=> @send_next_line())
 		# each time an ok is received, send next line
-		@printer.on 'ok', => @send_next_line()
-		@printer.on 'error', (error) => radio.broadcast 'error', error
-		@printer.on 'alarm', (alarm) => radio.broadcast 'alarm', alarm
-		@printer.on 'progress', (text) => radio.broadcast 'progress', 0, text
+		printer.on 'ok', => @send_next_line()
+		printer.on 'error', (error) => radio.broadcast 'error', error
+		printer.on 'alarm', (alarm) => radio.broadcast 'alarm', alarm
+		printer.on 'progress', (text) => radio.broadcast 'progress', 0, text
+		
+		printer.connect()
 	
 	send_next_line: ->
 		# send next line
 		if @line < @lines.length
-			@printer.write @lines[@line]
+			printer.write @lines[@line]
 			radio.broadcast 'progress', @line/@lines.length, 'cutting'
 		
 		# or if out of lines
 		else
 			debug "job finished"
-			@emit 'finished'
-			radio.broadcast 'finished'
-			@printer.close()
-			@printer = null
+			@finish()
 		
 		# track which line we're up to
 		@line++
@@ -71,9 +69,12 @@ class Job extends EventEmitter
 	
 	abort: ->
 		debug "aborting unfinished job"
-		@printer.soft_reset()
-		@printer.close
-		@printer = null
+		printer.soft_reset()
+		@finish()
+	
+	finish: ->
+		printer.close()
 		@emit 'finished'
+		radio.broadcast 'finished'
 
 module.exports = new Jobs

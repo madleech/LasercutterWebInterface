@@ -3,7 +3,7 @@ var current_status = null;
 var refresh_status = function() {
 	$.post('/api/progress', function(response) {
 		$('[data-id=current-job]').text(response.job);
-		$('[data-id=job-progressbar]').css('width', Math.round(response.progress)+'px');
+		$('[data-id=job-progressbar]').val(Math.round(response.progress));
 		$('[data-id=job-progress]').text(Math.round(response.progress)+'%');
 		$('[data-id=status]').text(response.status);
 		
@@ -32,8 +32,17 @@ var play = function(id) {
 }
 
 $(function() {
-	setInterval(refresh_status, 1500);
+	setInterval(refresh_status, 3000);
 	setInterval(update_temperature, 30000);
+	
+	$('[data-id=home]').click(function() { $.post('/api/home'); });
+	$('[data-id=abort]').click(function() { $.post('/api/abort'); });
+	$('[data-id=reload-webcam').click(function() {
+		img = $('img').slice(0, 1);
+		img2 = img.clone();
+		img.replaceWith(img2);
+		console.log('replaced', img, 'with', img2);
+	});
 	
 	refresh_status();
 });

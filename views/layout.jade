@@ -7,11 +7,9 @@ html
     link(rel='stylesheet', href='/stylesheets/style.css')
     link(rel='stylesheet', href='/components/bootstrap/dist/css/bootstrap.min.css')
   body
-    nav.navbar.navbar-inverse.navbar-static-top
-      .container-fluid
-        .navbar-header
-          a.navbar-brand(href='/') WebCut
-        block nav
+    nav(class='navbar navbar-dark bg-inverse')
+      a.navbar-brand WebCut
+      block nav
     
     .container-fluid
       block content

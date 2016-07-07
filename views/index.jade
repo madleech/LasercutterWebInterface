@@ -1,23 +1,29 @@
 extends layout
 
 block nav
-  .navbar-text
-    | Current job:
-    span(data-id='current-job') none
-  .navbar-text
-    | Status:
-    span(data-id='status') Waiting for job
-  .navbar-text
-    | Progress:
-    .progress
-      .progress-bar(style='width:0%', data-id='job-progressbar')
-    span(data-id='job-progress') 0%
-  .navbar-right
-    .navbar-text
+  .nav.navbar-nav
+    span.nav-item.navbar-text
+      | Current job:
+      span(data-id='current-job') none
+    span.nav-item.navbar-text
+      | Status:
+      span(data-id='status') Waiting for job
+    span.nav-item.navbar-text
+      | Progress:
+      progress.progress(value=0, max=100, data-id='job-progressbar')
+      span(data-id='job-progress') 0%
+  .nav.navbar-nav.pull-xs-right
+    span.nav-item.navbar-text
       | Temperature:
       span(data-id='temperature') Unknown
+    .btn-group.m-l-1
+      button(class='btn btn-secondary-outline btn-sm', data-id='home') Home
+      button(class='btn btn-secondary-outline btn-sm', data-id='abort') Abort
 
 block content
   img(src=webcam_url)
+  .row
+    .col-xs-12
+      button(class='btn btn-default btn-sm', data-id='refresh-webcam') Refresh
   audio(src='/sounds/start.mp3', data-sound-id='start')
   audio(src='/sounds/completed.mp3', data-sound-id='completed')
